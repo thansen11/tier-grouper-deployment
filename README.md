@@ -130,12 +130,14 @@ cd ..
 sudo docker container run -it --rm \
   --mount type=bind,src=$(pwd)/configs-and-secrets/grouper.hibernate.properties,dst=/run/secrets/grouper_grouper.hibernate.properties \
   --mount type=bind,src=$(pwd)/configs-and-secrets/subject.properties,dst=/run/secrets/grouper_subject.properties \
+  --mount type=bind,src=$(pwd)/configs-and-secrets/grouper-loader.properties,dst=/run/secrets/grouper_grouper-loader.properties \
   --network internal \
   localhost:5000/organization/grouper-base gsh -registry -check -runscript -noprompt
 
 sudo docker container run -it --rm \
   --mount type=bind,src=$(pwd)/configs-and-secrets/grouper.hibernate.properties,dst=/run/secrets/grouper_grouper.hibernate.properties \
   --mount type=bind,src=$(pwd)/configs-and-secrets/subject.properties,dst=/run/secrets/grouper_subject.properties \
+  --mount type=bind,src=$(pwd)/configs-and-secrets/grouper-loader.properties,dst=/run/secrets/grouper_grouper-loader.properties \
   --network internal \
   localhost:5000/organization/grouper-base gsh
 ```
@@ -156,7 +158,7 @@ sudo docker secret create subject.properties subject.properties
 sudo docker secret create host-key.pem host-key.pem
 sudo docker config create shibboleth2.xml shibboleth2.xml
 sudo docker config create host-cert.pem host-cert.pem
-
+sudo docker secret create grouper-loader.properties grouper-loader.properties
 cd ..
 ```
 
@@ -182,6 +184,7 @@ sudo docker service create --detach --name=daemon \
   --network internal \
   --secret source=grouper.hibernate.properties,target=grouper_grouper.hibernate.properties \
   --secret source=subject.properties,target=grouper_subject.properties \
+  --secret source=grouper-loader.properties,target=grouper_grouper-loader.properties \
   localhost:5000/organization/grouper-daemon
 
 sudo docker service list
@@ -208,6 +211,7 @@ sudo docker service create --detach --name=ui \
   --config source=shibboleth2.xml,target=/etc/shibboleth/shibboleth2.xml \
   --config source=host-cert.pem,target=/etc/pki/tls/certs/host-cert.pem \
   --config source=host-cert.pem,target=/etc/pki/tls/certs/cachain.pem \
+  --secret source=grouper-loader.properties,target=grouper_grouper-loader.properties \
   localhost:5000/organization/grouper-ui
   
 sudo docker service list
@@ -235,6 +239,7 @@ sudo docker service create --detach --name=ws \
   --secret host-key.pem \
   --config source=host-cert.pem,target=/etc/pki/tls/certs/host-cert.pem \
   --config source=host-cert.pem,target=/etc/pki/tls/certs/cachain.pem \
+  --secret source=grouper-loader.properties,target=grouper_grouper-loader.properties \
   localhost:5000/organization/grouper-ws
 
 sudo docker service list
